@@ -5,19 +5,24 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/rwruder/bosesbot/pkg/reminders"
 )
 
 // Variables used for command line parameters
 var (
 	Token string
+	R     chan *reminders.Reminder
 )
 
 func init() {
 	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.Parse()
+	R = make(chan *reminders.Reminder)
 }
 
 func main() {
@@ -30,6 +35,8 @@ func main() {
 
 	// Register the messageCreate func as a callback for MessageCreate events.
 	dg.AddHandler(messageCreate)
+	dg.AddHandler(reminderCreate)
+	go reminderListen(dg)
 
 	// Just like the ping pong example, we only care about receiving message
 	// events in this example.
@@ -99,5 +106,44 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			"Failed to send you a DM. "+
 				"Did you disable DM in your privacy settings?",
 		)
+	}
+}
+
+func reminderCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+	if m.Content[:2] != "!r" {
+		return
+	}
+	command := strings.Split(m.Content, " ")
+	message := strings.Join(command[2:], " ")
+	dur, err := time.ParseDuration(command[1])
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Wrong time format")
+		return
+	}
+	reminder := reminders.Reminder{
+		User:    *m.Author,
+		Tags:    []string{},
+		Channel: m.ChannelID,
+		EndTime: time.Now().Add(dur),
+		Message: message,
+	}
+	go reminder.Set(R)
+	s.ChannelMessageSend(
+		m.ChannelID,
+		fmt.Sprintf("%v set a reminder for %v.", reminder.User.Username, reminder.EndTime),
+	)
+
+}
+
+func reminderListen(s *discordgo.Session) {
+	for {
+		done := <-R
+		mention := done.User.Mention()
+		message := done.Message
+		remind := fmt.Sprintf("%v %v", mention, message)
+		s.ChannelMessageSend(done.Channel, remind)
 	}
 }

@@ -1,13 +1,17 @@
 package reminders
 
-import "time"
+import (
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+)
 
 type Reminder struct {
-	User    string    `json:"user"`
-	Tags    []string  `json:"tags"`
-	Channel string    `json:"channel"`
-	EndTime time.Time `json:"end"`
-	Message string    `json:"message"`
+	User    discordgo.User `json:"user"`
+	Tags    []string       `json:"tags"`
+	Channel string         `json:"channel"`
+	EndTime time.Time      `json:"end"`
+	Message string         `json:"message"`
 }
 
 func (r *Reminder) Set(end chan *Reminder) {
