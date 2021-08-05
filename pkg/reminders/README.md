@@ -1,0 +1,1 @@
+This package will provide functions, structs and a core loop to handle reminders. It should not be discord specific. 
