@@ -148,7 +148,7 @@ func ParseCommand(user discordgo.User, channel, command string) (Reminder, error
 	// should be separated by spaces, and there should be only
 	for _, f := range flgs {
 		// Separate flags by spaces and remove extra trailing string
-		f := strings.Split(f, " ")[:2]
+		f := strings.Split(f, " ")[:len(f)]
 		switch len(f) {
 		case 1:
 			flags[f[0]] = ""
