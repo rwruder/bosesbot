@@ -128,9 +128,9 @@ func ParseCommand(user discordgo.User, channel, command string) (Reminder, error
 
 	// split out the trailing message from the flags.
 	// message must be wrapped in quotes
-	// Split leaves an extra empty trailing string hense the [:2]
-	cmd := strings.Split(command, "\"")[:2]
-	if len(cmd) == 2 {
+	// Split leaves an extra empty trailing string
+	cmd := strings.Split(command, "\"")
+	if len(cmd) >= 2 {
 		message = cmd[1]
 	} else {
 		message = ""

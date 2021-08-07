@@ -15,6 +15,7 @@ type Reminder struct {
 	Message  string         `json:"message"`
 }
 
+// Starts the reminder
 func (r *Reminder) Set(end chan *Reminder) {
 	// Takes a channel and sends the reminder to that channel when the timer is up
 	for {
@@ -27,6 +28,7 @@ func (r *Reminder) Set(end chan *Reminder) {
 	end <- r
 }
 
+// Starts listening for reminders on channel r
 func Listen(s *discordgo.Session, r chan *Reminder) {
 	for {
 		done := <-r
