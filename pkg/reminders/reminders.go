@@ -1,17 +1,18 @@
 package reminders
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 type Reminder struct {
-	User    discordgo.User `json:"user"`
-	Tags    []string       `json:"tags"`
-	Channel string         `json:"channel"`
-	EndTime time.Time      `json:"end"`
-	Message string         `json:"message"`
+	User     discordgo.User `json:"user"`
+	Mentions string         `json:"mentions"`
+	Channel  string         `json:"channel"`
+	EndTime  time.Time      `json:"end"`
+	Message  string         `json:"message"`
 }
 
 func (r *Reminder) Set(end chan *Reminder) {
@@ -24,4 +25,14 @@ func (r *Reminder) Set(end chan *Reminder) {
 		}
 	}
 	end <- r
+}
+
+func Listen(s *discordgo.Session, r chan *Reminder) {
+	for {
+		done := <-r
+		mention := done.User.Mention() + done.Mentions
+		message := done.Message
+		remind := fmt.Sprintf("%v %v", mention, message)
+		s.ChannelMessageSend(done.Channel, remind)
+	}
 }
