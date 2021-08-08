@@ -129,9 +129,9 @@ func ParseCommand(user discordgo.User, channel, command string) (Reminder, error
 	// split out the trailing message from the flags.
 	// message must be wrapped in quotes
 	// Split leaves an extra empty trailing string
-	cmd := strings.Split(command, "\"")
+	cmd := strings.SplitAfterN(command, "\"", 2)
 	if len(cmd) >= 2 {
-		message = cmd[1]
+		message = strings.Trim(cmd[1], "\"")
 	} else {
 		message = ""
 	}
@@ -143,12 +143,12 @@ func ParseCommand(user discordgo.User, channel, command string) (Reminder, error
 
 	// split the flags apart. Each should lead with a -
 	// remove the extra string before the -
-	flgs := strings.Split(cmd[0], "-")[1:]
+	flgs := strings.FieldsFunc(cmd[0], func(c rune) bool { return c == []rune("-")[0] })
 	// loop through flags and split them into the flag and it's args storing them as a map
 	// should be separated by spaces, and there should be only
 	for _, f := range flgs {
 		// Separate flags by spaces and remove extra trailing string
-		f := strings.Split(f, " ")[:len(f)]
+		f := strings.SplitN(f, " ", 2)
 		switch len(f) {
 		case 1:
 			flags[f[0]] = ""
