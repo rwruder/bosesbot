@@ -129,12 +129,15 @@ func ParseCommand(user discordgo.User, channel, command string) (Reminder, error
 	// split out the trailing message from the flags.
 	// message must be wrapped in quotes
 	// Split leaves an extra empty trailing string
-	cmd := strings.SplitAfterN(command, "\"", 2)
+	command = strings.Trim(command, " ")
+	command = strings.Trim(command, "\"")
+	cmd := strings.SplitN(command, "\"", 2)
 	if len(cmd) >= 2 {
-		message = strings.Trim(cmd[1], "\"")
+		message = cmd[1]
 	} else {
 		message = ""
 	}
+
 	// fill in the reminder so it's ready to be modified by the commands
 	reminder.User = user
 	reminder.Channel = channel
@@ -148,12 +151,13 @@ func ParseCommand(user discordgo.User, channel, command string) (Reminder, error
 	// should be separated by spaces, and there should be only
 	for _, f := range flgs {
 		// Separate flags by spaces and remove extra trailing string
-		f := strings.SplitN(f, " ", 2)
-		switch len(f) {
+		f = strings.Trim(f, " ")
+		flg := strings.SplitN(f, " ", 2)
+		switch len(flg) {
 		case 1:
-			flags[f[0]] = ""
+			flags[flg[0]] = ""
 		case 2:
-			flags[f[0]] = f[1]
+			flags[flg[0]] = flg[1]
 		default:
 			err = fmt.Errorf("You entered the arguments to one of the flags incorrectly")
 			return reminder, err
