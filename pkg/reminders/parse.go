@@ -85,14 +85,6 @@ func setDate(s string, r *Reminder) error {
 	return err
 }
 
-// sets the reminder's mentions to be s
-func setMentions(s string, r *Reminder) error {
-	mentions := s
-	var err error
-	r.Mentions = mentions
-	return err
-}
-
 // Map of commands
 // add commands here with the key as the flag
 var commands = map[string]cmd{
@@ -103,10 +95,6 @@ var commands = map[string]cmd{
 	"d": {
 		action: setDate,
 		help:   "Set a reminder based on a set date. m/d/yyyy.h:m. If year or time is left off it will default to the current one. Date and time should be separated by a period",
-	},
-	"m": {
-		action: setMentions,
-		help:   "should be a list of mentions. The mentions should not be separated by anything",
 	},
 }
 
@@ -119,7 +107,7 @@ func help() string {
 	return helpString
 }
 
-func ParseCommand(user discordgo.User, channel, command string) (Reminder, error) {
+func ParseCommand(user discordgo.User, discordmessage *discordgo.Message, channel, command string) (Reminder, error) {
 	// Declare variables
 	var reminder Reminder
 	var err error
@@ -140,9 +128,9 @@ func ParseCommand(user discordgo.User, channel, command string) (Reminder, error
 
 	// fill in the reminder so it's ready to be modified by the commands
 	reminder.User = user
+	reminder.DiscordMessage = discordmessage
 	reminder.Channel = channel
 	reminder.Message = message
-	reminder.Mentions = ""
 
 	// split the flags apart. Each should lead with a -
 	// remove the extra string before the -
